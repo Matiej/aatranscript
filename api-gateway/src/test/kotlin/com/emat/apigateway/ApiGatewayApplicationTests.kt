@@ -1,13 +1,13 @@
-package com.emat.aatranscript
+package com.emat.apigateway
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class AatranscriptApplicationTests {
+class ApiGatewayApplicationTests {
 
-	@Test
-	fun contextLoads() {
-	}
+    @Test
+    fun contextLoads() {
+    }
 
 }
