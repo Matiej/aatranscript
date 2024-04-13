@@ -1,11 +1,11 @@
-package com.emat.aatranscript
+package com.emat.apigateway
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class AatranscriptApplication
+class ApiGatewayApplication
 
 fun main(args: Array<String>) {
-	runApplication<AatranscriptApplication>(*args)
+    runApplication<ApiGatewayApplication>(*args)
 }
