@@ -4,7 +4,9 @@ import com.emat.apigateway.global.headerfactory.HttpHeaderFactory.Companion.getS
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import mu.KotlinLogging
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -18,6 +20,8 @@ import java.net.URI
 @RestController
 @RequestMapping("/v1/transcriptions")
 class TranscriptController {
+
+    private val logger = KotlinLogging.logger {}
 
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
@@ -34,8 +38,10 @@ class TranscriptController {
         ]
     )
     fun addTranscription(@RequestBody createTranscription: RestCreateTranscription): ResponseEntity<Any> {
+        logger.info("Received request to add new transcription ID: ${createTranscription.transcriptionId}, on endpoint '/v1/transcriptions'")
         //my logic
         val myExampleID: Long = 1L
+        logger.info("Successfully processed transcription, ID: $myExampleID")
         return ResponseEntity.created(createURI(myExampleID))
             .headers(getSuccessfulHeaders(HttpStatus.CREATED, HttpMethod.POST))
             .build()
