@@ -21,6 +21,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.emat</groupId>
+            <artifactId>core-serv</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
 <!--        LOGGING-->
         <dependency>
             <groupId>io.github.microutils</groupId>

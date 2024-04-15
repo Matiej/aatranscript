@@ -1,5 +1,6 @@
 package com.emat.apigateway.global
 
+import com.emat.coreserv.global.AppData
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,7 +16,7 @@ class SelfCheckController(
 
     @GetMapping(value = ["/version"])
     fun retrieveApplicationVersion(): ResponseEntity<Any> {
-        return ResponseEntity.ok(this.appData.applicationVersion())
+        return ResponseEntity.ok(this.appData.getApplicationVersion())
     }
 
 }
