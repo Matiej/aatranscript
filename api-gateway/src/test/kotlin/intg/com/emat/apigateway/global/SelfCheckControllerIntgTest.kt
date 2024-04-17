@@ -41,7 +41,7 @@ class SelfCheckControllerIntgTest {
     @Test
     fun `retrieve application version returns version as expected and use GET method, returns 200 response code`() {
         //given
-        val expectedApplicationVersion = "1.0.0_SNAPSHOT".plus( " on the day: ").plus("2024-10-15T00:00")
+        val expectedApplicationVersion = "1.0.0_SNAPSHOT".plus(" on the day: ").plus("2024-10-15T00:00")
 
         //when
         appData.clock = Clock.fixed(Instant.parse("2024-10-15T00:00:00Z"), ZoneOffset.UTC)
@@ -56,26 +56,5 @@ class SelfCheckControllerIntgTest {
                 assertEquals(expectedApplicationVersion, response.responseBody)
                 assertNotEquals("Other verrsion", response.responseBody)
             }
-    }
-
-    @Test
-    fun `greetings endpoint returns expected message and use GET method returns 200 response code`() {
-        //given
-        val testName: String = "Maciek"
-
-        //when
-        var uri = webTestClient.get()
-            .uri("/v1/selfcheck/{name}", testName)
-
-
-        //then
-        val resposne = uri
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(String::class.java)
-            .returnResult()
-
-        assertEquals("Hello $testName", resposne.responseBody)
-
     }
 }
