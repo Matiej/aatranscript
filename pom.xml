@@ -20,6 +20,7 @@
     <modules>
         <module>api-gateway</module>
         <module>core-serv</module>
+        <module>jpa-entity</module>
     </modules>
 
 <!--    <properties>-->
