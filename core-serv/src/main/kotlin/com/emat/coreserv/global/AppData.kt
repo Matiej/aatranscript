@@ -6,7 +6,7 @@ import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
-open class AppData {
+ class AppData {
     var clock: Clock = Clock.systemDefaultZone()
         set(value) {
             field = value
