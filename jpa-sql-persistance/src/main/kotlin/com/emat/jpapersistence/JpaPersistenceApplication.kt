@@ -6,9 +6,9 @@ import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication
 @ComponentScan(basePackages = ["com.emat.jpapersistence"])
-class JapPersistenceApplication
+class JpaPersistenceApplication
 
 
 fun main(args: Array<String>) {
-    runApplication<JapPersistenceApplication>(*args)
+    runApplication<JpaPersistenceApplication>(*args)
 }
