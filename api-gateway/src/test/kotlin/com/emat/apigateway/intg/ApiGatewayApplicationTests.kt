@@ -1,4 +1,4 @@
-package intg.com.emat.apigateway
+package com.emat.apigateway
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

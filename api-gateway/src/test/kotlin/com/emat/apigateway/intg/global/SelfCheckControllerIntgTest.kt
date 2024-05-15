@@ -1,5 +1,6 @@
-package com.emat.apigateway.global
+package com.emat.apigateway.intg.global
 
+import com.emat.apigateway.ApiGatewayApplication
 import com.emat.coreserv.global.AppData
 import mu.KotlinLogging
 import org.junit.jupiter.api.Test
@@ -18,8 +19,8 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ComponentScan(basePackages = ["com.emat.coreserv.global"])
+@SpringBootTest(classes = [ApiGatewayApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ComponentScan(basePackages = ["com.emat.coreserv.global", "com.emat.apigateway.global", "com.emat.apigateway"])
 @ActiveProfiles("test")
 @AutoConfigureWebClient
 @PropertySource("classpath:application-test.properties")
