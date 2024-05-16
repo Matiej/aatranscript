@@ -14,15 +14,15 @@ import java.util.UUID.randomUUID
 open class BaseEntity {
     @Id
     @GeneratedValue
-    open val id: Long? = null
+    open var id: Long? = null
     open val UUID: String = randomUUID().toString()
 
     @CreatedDate
-    open val createdAt: LocalDateTime? = null
+    open var createdAt: LocalDateTime? = null
 
     @LastModifiedDate
-    open val lastUpdatedAt: LocalDateTime? = null
+    open var lastUpdatedAt: LocalDateTime? = null
 
     @Version
-    open val version: Long? = null
+    open var version: Long? = null
 }
