@@ -3,10 +3,9 @@ package com.emat.apigateway.intg.global
 import com.emat.apigateway.ApiGatewayApplication
 import com.emat.coreserv.global.AppData
 import mu.KotlinLogging
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient
