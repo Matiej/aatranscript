@@ -14,13 +14,13 @@ private class TranscriptionServiceImpl(
 ) : TranscriptionService {
 
     private val logger = KotlinLogging.logger {}
-    override fun addTranscription(createTranscriptionCommand: CreateTranscriptionCommand): CreateTranscriptionResponse {
-        logger.info("Received request to add transcription: ${createTranscriptionCommand.openAiTranscriptionId}")
-        val transcriptionEntity = createTranscriptionCommand.toEntity()
+    override fun addTranscription(transcriptionCommand: TranscriptionCommand): TranscriptionResponse {
+        logger.info("Received request to add transcription: ${transcriptionCommand.openAiTranscriptionId}")
+        val transcriptionEntity = transcriptionCommand.toEntity()
         val savedTranscription = repositoryService.saveTranscription(transcriptionEntity)
-        return savedTranscription.id?.let { CreateTranscriptionResponse.success(it) }
-            ?: CreateTranscriptionResponse.error(
-                "SERVER_ERROR",
+        return savedTranscription.id?.let { TranscriptionResponse.success(it) }
+            ?: TranscriptionResponse.error(
+                TranscriptionResponse.TranscriptionErrorStatus.SERVER_ERROR,
                 "Transcription could not be saved"
             )
     }
@@ -31,15 +31,13 @@ private class TranscriptionServiceImpl(
         return transcriptionEntityList.map { it.toTranscription() }.toList()
     }
 
-//    private fun saveExtra() {
-//        val transcription = TranscriptionEntity(
-//            openAiTranscriptionId = "initialIDextra",
-//            originalContent = "Initial contentEX",
-//            summary = "Initial summary",
-//            transcriptionDate = "2023-01-01",
-//            source = "Initial sourceEX",
-//            author = "Initial authorEX"
-//        )
-//        repositoryService.saveTranscription(transcription)
-//    }
+    override fun updateTranscription(id: Long, toCommand: TranscriptionCommand): TranscriptionResponse {
+        logger.info("Received request to update transcription: $id")
+        return repositoryService.findTranscriptionById(id).orElse(null)?.let {
+            TranscriptionResponse.success(it.id!!)
+        } ?: TranscriptionResponse.error(
+            TranscriptionResponse.TranscriptionErrorStatus.NOT_FOUND,
+            "Transcription with ID: $id not found"
+        )
+    }
 }
