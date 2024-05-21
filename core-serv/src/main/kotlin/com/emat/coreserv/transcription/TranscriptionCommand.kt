@@ -2,7 +2,7 @@ package com.emat.coreserv.transcription
 
 import com.emat.jpapersistence.transcript.entity.TranscriptionEntity
 
-data class CreateTranscriptionCommand(
+data class TranscriptionCommand(
     var openAiTranscriptionId: String? = null,
     var originalContent: String? = null,
     var summary: String? = null,
