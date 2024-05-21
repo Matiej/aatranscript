@@ -1,18 +1,16 @@
-package com.emat.apigateway.global
+package com.emat.apigateway.unit.global
 
-import com.emat.apigateway.transcript.TranscriptController
+import com.emat.apigateway.global.GlobalControllerExceptionHandler
+import com.emat.apigateway.global.SelfCheckController
 import com.emat.coreserv.global.AppData
 import io.mockk.every
 import io.mockk.mockk
 import mu.KotlinLogging
 import org.junit.jupiter.api.*
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.Clock
 import java.time.Instant
@@ -53,40 +51,33 @@ class SelfCheckControllerUnitTest {
         every { appData.getApplicationVersion() } returns applicationVersion
 
         //expect
-        mockMvc.get("/v1/selfcheck/version")
-            .andExpect {
-                status { isOk() }
-                content { string(applicationVersion) }
+        mockMvc.perform(get("/v1/selfcheck/version"))
+            .andExpect(status().isOk)
+            .andExpect(content().string(applicationVersion))
+            .andDo { result ->
+                val responseBody = result.response.contentAsString
+                Assertions.assertNotNull(responseBody)
+                Assertions.assertEquals(applicationVersion, responseBody)
+                Assertions.assertNotEquals("Other version", responseBody)
             }
-//            .expectStatus().isOk
-//            .expectBody(String::class.java)
-//            .consumeWith { response ->
-//                Assertions.assertNotNull(response.responseBody)
-//                Assertions.assertEquals(applicationVersion, response.responseBody)
-//                Assertions.assertNotEquals("Other verrsion", response.responseBody)
-//            }
 
     }
 
-//    @Test
-//    fun `greetings endpoint returns expected message and use GET method returns 200 response code`() {
-//        //given
-//        val testName: String = "Maciek"
-//
-//        //when
-//        var uri = webTestClient.get()
-//            .uri("/v1/selfcheck/{name}", testName)
-//
-//        //then
-//        val resposne = uri
-//            .exchange()
-//            .expectStatus().isOk
-//            .expectBody(String::class.java)
-//            .returnResult()
-//
-//        Assertions.assertEquals("Hello $testName", resposne.responseBody)
-//
-//    }
+    @Test
+    fun `greetings endpoint returns expected message and use GET method returns 200 response code`() {
+        //given
+        val testName: String = "Maciek"
 
+        //when
+        var expect = mockMvc.perform(get("/v1/selfcheck/{name}", testName))
+            .andExpect(status().isOk)
+            .andExpect(content().string("Hello $testName"))
 
+        //then
+        expect
+            .andDo { result ->
+                val responseBody = result.response.contentAsString
+                Assertions.assertEquals("Hello $testName", responseBody)
+            }
+    }
 }
