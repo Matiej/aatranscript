@@ -17,8 +17,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 class TranscriptControllerUnitTest {
@@ -43,8 +42,10 @@ class TranscriptControllerUnitTest {
         transcriptionRequest.summary = "Test summary"
 
         transcriptionService = mockk()
+        val noSpringInitiateGlobalCExceptionHandler = GlobalControllerExceptionHandler()
+
         mockMvc = MockMvcBuilders.standaloneSetup(TranscriptController(transcriptionService))
-            .setControllerAdvice(GlobalControllerExceptionHandler::class)
+            .setControllerAdvice(noSpringInitiateGlobalCExceptionHandler)
             .build()
     }
 
@@ -83,6 +84,106 @@ class TranscriptControllerUnitTest {
 
         //then
         verify { transcriptionService.addTranscription(any()) }
+    }
+
+    @Test
+    fun `should return 404 not found when addTranscription is unsuccessful - bad url`() {
+        //given
+        val response = TranscriptionResponse.success(id = 1L)
+
+        //when
+        every { transcriptionService.addTranscription(any()) } returns response
+
+        //expect
+        mockMvc.perform(
+            post("/v1/transcriptionsxyz")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                        "openAiTranscriptionId": "1234",
+                        "originalContent": "Test content",
+                        "transcriptionDate": "2024-05-21 11:21:45",
+                        "source": "Test source",
+                        "author": "Test author",
+                        "summary": "Test summary"
+    }
+    """.trimIndent()
+                )
+        )
+            .andExpect(status().isNotFound)
+            .andExpect(header().exists(HttpHeaders.LOCATION))
+
+        //then
+        verify(exactly = 0) { transcriptionService.addTranscription(any()) }
+    }
+
+    @Test
+    fun `should return 500 internal server error when addTranscription is unsuccessful`() {
+        //given
+        val response = TranscriptionResponse.error( TranscriptionResponse.TranscriptionErrorStatus.SERVER_ERROR,
+            "Transcription could not be saved")
+
+        //when
+        every { transcriptionService.addTranscription(any()) } returns response
+
+        //expect
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                        "openAiTranscriptionId": "1234",
+                        "originalContent": "Test content",
+                        "transcriptionDate": "2024-05-21 11:21:45",
+                        "source": "Test source",
+                        "author": "Test author",
+                        "summary": "Test summary"
+    }
+    """.trimIndent()
+                )
+        )
+            .andExpect(status().isInternalServerError)
+            .andExpect(header().exists("Message"))
+            .andExpect(header().string("Message", "Transcription could not be saved"))
+            .andReturn()
+
+        //then
+        verify(exactly = 1) { transcriptionService.addTranscription(any()) }
+    }
+
+    @Test
+    fun `should return 500 internal server error when addTranscription throws exception`() {
+        //given
+        val exceptionMessage = "Transcription could not be saved"
+
+        //when
+        every { transcriptionService.addTranscription(any()) } throws Exception(exceptionMessage)
+
+        //expect
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                        "openAiTranscriptionId": "1234",
+                        "originalContent": "Test content",
+                        "transcriptionDate": "2024-05-21 11:21:45",
+                        "source": "Test source",
+                        "author": "Test author",
+                        "summary": "Test summary"
+    }
+    """.trimIndent()
+                )
+        )
+            .andExpect(status().isInternalServerError)
+            .andExpect(jsonPath("$.error").value(exceptionMessage))
+            .andReturn()
+
+        //then
+        verify(exactly = 1) { transcriptionService.addTranscription(any()) }
     }
 
 
