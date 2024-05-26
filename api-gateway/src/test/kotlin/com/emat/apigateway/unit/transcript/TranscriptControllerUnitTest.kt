@@ -17,8 +17,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 class TranscriptControllerUnitTest {
@@ -43,8 +42,10 @@ class TranscriptControllerUnitTest {
         transcriptionRequest.summary = "Test summary"
 
         transcriptionService = mockk()
+        val noSpringInitiateGlobalCExceptionHandler = GlobalControllerExceptionHandler()
+
         mockMvc = MockMvcBuilders.standaloneSetup(TranscriptController(transcriptionService))
-            .setControllerAdvice(GlobalControllerExceptionHandler::class)
+            .setControllerAdvice(noSpringInitiateGlobalCExceptionHandler)
             .build()
     }
 
@@ -85,6 +86,233 @@ class TranscriptControllerUnitTest {
         verify { transcriptionService.addTranscription(any()) }
     }
 
+    @Test
+    fun `should return 404 not found when addTranscription is unsuccessful - bad url`() {
+        //given
+        val response = TranscriptionResponse.success(id = 1L)
+
+        //when
+        every { transcriptionService.addTranscription(any()) } returns response
+
+        //expect
+        mockMvc.perform(
+            post("/v1/transcriptionsxyz")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                        "openAiTranscriptionId": "1234",
+                        "originalContent": "Test content",
+                        "transcriptionDate": "2024-05-21 11:21:45",
+                        "source": "Test source",
+                        "author": "Test author",
+                        "summary": "Test summary"
+    }
+    """.trimIndent()
+                )
+        )
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.error").value("No URL found for this request /v1/transcriptionsxyz"))
+            .andReturn()
+
+        //then
+        verify(exactly = 0) { transcriptionService.addTranscription(any()) }
+    }
+
+    @Test
+    fun `should return 500 internal server error when addTranscription is unsuccessful`() {
+        //given
+        val response = TranscriptionResponse.error( TranscriptionResponse.TranscriptionErrorStatus.SERVER_ERROR,
+            "Transcription could not be saved")
+
+        //when
+        every { transcriptionService.addTranscription(any()) } returns response
+
+        //expect
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                        "openAiTranscriptionId": "1234",
+                        "originalContent": "Test content",
+                        "transcriptionDate": "2024-05-21 11:21:45",
+                        "source": "Test source",
+                        "author": "Test author",
+                        "summary": "Test summary"
+    }
+    """.trimIndent()
+                )
+        )
+            .andExpect(status().isInternalServerError)
+            .andExpect(header().exists("Message"))
+            .andExpect(header().string("Message", "Transcription could not be saved"))
+            .andReturn()
+
+        //then
+        verify(exactly = 1) { transcriptionService.addTranscription(any()) }
+    }
+
+    @Test
+    fun `should return 500 internal server error when addTranscription throws exception`() {
+        //given
+        val exceptionMessage = "Transcription could not be saved"
+
+        //when
+        every { transcriptionService.addTranscription(any()) } throws Exception(exceptionMessage)
+
+        //expect
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                        "openAiTranscriptionId": "1234",
+                        "originalContent": "Test content",
+                        "transcriptionDate": "2024-05-21 11:21:45",
+                        "source": "Test source",
+                        "author": "Test author",
+                        "summary": "Test summary"
+    }
+    """.trimIndent()
+                )
+        )
+            .andExpect(status().isInternalServerError)
+            .andExpect(jsonPath("$.error").value(exceptionMessage))
+            .andReturn()
+
+        //then
+        verify(exactly = 1) { transcriptionService.addTranscription(any()) }
+    }
+
+    @Test
+    fun `should return 400 when openAiTranscriptionId is null`() {
+        val requestContent = """
+            {
+                "originalContent": "Test content",
+                "transcriptionDate": "2024-05-21 11:21:45",
+                "source": "Test source",
+                "author": "Test author",
+                "summary": "Test summary"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.openAiTranscriptionId").value("openAiTranscriptionId is required"))
+    }
+
+    @Test
+    fun `should return 400 when originalContent is null`() {
+        val requestContent = """
+            {
+                "openAiTranscriptionId": "1234",
+                "transcriptionDate": "2024-05-21 11:21:45",
+                "source": "Test source",
+                "author": "Test author",
+                "summary": "Test summary"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.originalContent").value("Field 'originalContent' is required"))
+    }
+
+    @Test
+    fun `should return 400 when summary is null`() {
+        val requestContent = """
+            {
+                "openAiTranscriptionId": "1234",
+                "originalContent": "Test content",
+                "transcriptionDate": "2024-05-21 11:21:45",
+                "source": "Test source",
+                "author": "Test author"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.summary").value("Field 'summary' is required"))
+    }
+
+    @Test
+    fun `should return 400 when transcriptionDate is invalid`() {
+        val requestContent = """
+            {
+                "openAiTranscriptionId": "1234",
+                "originalContent": "Test content",
+                "transcriptionDate": "invalid-date",
+                "source": "Test source",
+                "author": "Test author",
+                "summary": "Test summary"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.transcriptionDate").value("Field 'transcriptionDate' must be in the format dd:MM:yyyy hh:mm:ss"))
+    }
+
+    @Test
+    fun `should return 400 when source is null`() {
+        val requestContent = """
+            {
+                "openAiTranscriptionId": "1234",
+                "originalContent": "Test content",
+                "transcriptionDate": "2024-05-21 11:21:45",
+                "author": "Test author",
+                "summary": "Test summary"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.source").value("Field 'source' is required"))
+    }
+
+    @Test
+    fun `should return 400 when author is null`() {
+        val requestContent = """
+            {
+                "openAiTranscriptionId": "1234",
+                "originalContent": "Test content",
+                "transcriptionDate": "2024-05-21 11:21:45",
+                "source": "Test source",
+                "summary": "Test summary"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/v1/transcriptions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.author").value("Field 'author' is required"))
+    }
 
 //    @Test
 //    fun findAllTranscriptions() {

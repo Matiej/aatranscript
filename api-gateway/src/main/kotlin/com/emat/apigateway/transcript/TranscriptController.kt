@@ -42,20 +42,24 @@ class TranscriptController(
         logger.info("Received request to add new transcription ID: ${createTranscription.openAiTranscriptionId}, on endpoint '/v1/transcriptions'")
         val addTranscriptionResult = transcriptionService.addTranscription(createTranscription.toCommand())
         val id = addTranscriptionResult.id
-        logger.info("Successfully processed transcription save request, ID: $id")
-        return ResponseEntity.created(createURI(id!!))
-            .headers(getSuccessfulHeaders(HttpStatus.CREATED, HttpMethod.POST))
-            .build()
-    }
 
-    private fun createURI(id: Long): URI {
-        return ServletUriComponentsBuilder
-            .fromCurrentServletMapping()
-            .path("/v1")
-            .path("/transcriptions")
-            .path("/{id}")
-            .buildAndExpand(id)
-            .toUri()
+        return addTranscriptionResult.success?.let {
+            if (it) {
+                logger.info("Successfully processed transcription save request, ID: $id")
+                ResponseEntity.created(createURI(id!!))
+                    .headers(getSuccessfulHeaders(HttpStatus.CREATED, HttpMethod.POST))
+                    .build()
+            } else {
+                ResponseEntity.internalServerError()
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, HttpMethod.POST.name())
+                    .header(HeaderKey.STATUS.getHearKeyLabel(), addTranscriptionResult.errorStatus!!.status.name)
+                    .header(HeaderKey.MESSAGE.getHearKeyLabel(), addTranscriptionResult.message)
+                    .build()
+            }
+        } ?: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .header(HeaderKey.STATUS.getHearKeyLabel(), HttpStatus.INTERNAL_SERVER_ERROR.name)
+            .header(HeaderKey.MESSAGE.getHearKeyLabel(), "Unknown error occurred")
+            .build()
     }
 
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -120,5 +124,14 @@ class TranscriptController(
             .build()
     }
 
+}
 
+private fun createURI(id: Long): URI {
+    return ServletUriComponentsBuilder
+        .fromCurrentServletMapping()
+        .path("/v1")
+        .path("/transcriptions")
+        .path("/{id}")
+        .buildAndExpand(id)
+        .toUri()
 }
