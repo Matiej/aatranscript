@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @SpringBootApplication
-@ComponentScan(basePackages = ["com.emat.coreserv", "com.emat.apigateway", "com.emat.jpapersistence"])
+@ComponentScan(basePackages = ["com.emat.coreserv", "com.emat.apigateway", "com.emat.jpapersistence", "com.emat.openAi"])
 @EnableJpaRepositories(basePackages = ["com.emat.jpapersistence.transcript.repositories"])
 @EntityScan(basePackages = ["com.emat.jpapersistence.transcript.entity"])
 @EnableJpaAuditing
