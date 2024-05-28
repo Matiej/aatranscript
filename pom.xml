@@ -19,6 +19,7 @@
 
     <modules>
         <module>jpa-sql-persistance</module>
+        <module>openAi-serv</module>
         <module>core-serv</module>
         <module>api-gateway</module>
     </modules>

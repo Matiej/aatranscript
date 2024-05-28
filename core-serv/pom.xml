@@ -17,6 +17,11 @@
     <dependencies>
         <dependency>
             <groupId>com.emat</groupId>
+            <artifactId>openAi-serv</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.emat</groupId>
             <artifactId>jpa-sql-persistance</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
