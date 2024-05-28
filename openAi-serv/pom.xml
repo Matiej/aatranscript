@@ -10,11 +10,28 @@
     </parent>
 
     <artifactId>openAi-serv</artifactId>
+    <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>18</maven.compiler.source>
-        <maven.compiler.target>18</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <name>OpenAI services Module</name>
+    <description>OpenAI service module connection to OPEN</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.springboot.ai</groupId>
+            <artifactId>spring-ai-openai</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
