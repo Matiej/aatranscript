@@ -107,12 +107,12 @@ class TranscriptController(
         logger.info("Successfully processed transcription update, ID: $id")
         return response.success?.let {
             if (it) {
-                ResponseEntity.ok()
+                ResponseEntity.status(response.errorStatus?.status ?: HttpStatus.OK)
                     .headers(getSuccessfulHeaders(HttpStatus.OK, HttpMethod.PUT))
                     .location(createURI(id))
                     .build()
             } else {
-                ResponseEntity.badRequest()
+                ResponseEntity.status(response.errorStatus?.status ?: HttpStatus.INTERNAL_SERVER_ERROR)
                     .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, HttpMethod.PUT.name())
                     .header(HeaderKey.STATUS.getHearKeyLabel(), response.errorStatus!!.status.name)
                     .header(HeaderKey.MESSAGE.getHearKeyLabel(), response.message)
